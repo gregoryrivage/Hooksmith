@@ -15,7 +15,7 @@
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'hooksmith', '~> 0.1.0'
+gem 'hooksmith', '~> 0.1.1'
 ```
 
 Then execute:
