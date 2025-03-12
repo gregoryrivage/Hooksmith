@@ -38,12 +38,12 @@ Configure your webhook processors in an initializer (e.g., `config/initializers/
 ```ruby
 Hooksmith.configure do |config|
   config.provider(:stripe) do |stripe|
-    stripe.register(:charge_succeeded, Stripe::Processor::ChargeSucceeded::Tenant)
-    stripe.register(:charge_succeeded, Stripe::Processor::ChargeSucceeded::Landlord)
+    stripe.register(:charge_succeeded, 'Stripe::Processor::ChargeSucceeded::First')
+    stripe.register(:charge_succeeded, 'Stripe::Processor::ChargeSucceeded::Second')
   end
 
   config.provider(:paypal) do |paypal|
-    paypal.register(:payment_received, Paypal::Processor::PaymentReceived)
+    paypal.register(:payment_received, 'Paypal::Processor::PaymentReceived')
   end
 end
 ```
@@ -58,13 +58,13 @@ module Stripe
       class Tenant < Hooksmith::Processor::Base
         # Only handle events with a tenant_payment_id.
         def can_handle?(payload)
-          payload.dig("metadata", "tenant_payment_id").present?
+          payload.dig("metadata", "id").present?
         end
 
         def process!
-          tenant_payment_id = payload.dig("metadata", "tenant_payment_id")
+          tenant_payment_id = payload.dig("metadata", "id")
           # Add your business logic here (e.g., update database records).
-          puts "Processed tenant payment: #{tenant_payment_id}"
+          puts "Processed id : #{id}"
         end
       end
     end
