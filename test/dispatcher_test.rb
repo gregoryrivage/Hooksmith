@@ -11,7 +11,7 @@ class DispatcherTest < Minitest::Test
   end
 
   # Un processor simple qui traite toujours.
-  class SingleProcessor < Hooksmith::Processor::Base
+  class ::SingleProcessor < Hooksmith::Processor::Base
     def can_handle?(_payload)
       true
     end
@@ -22,7 +22,7 @@ class DispatcherTest < Minitest::Test
   end
 
   # Deux processors pour tester la situation multi-processors.
-  class MultiProcessor1 < Hooksmith::Processor::Base
+  class ::MultiProcessor1 < Hooksmith::Processor::Base
     def can_handle?(_payload)
       true
     end
@@ -32,7 +32,7 @@ class DispatcherTest < Minitest::Test
     end
   end
 
-  class MultiProcessor2 < Hooksmith::Processor::Base
+  class ::MultiProcessor2 < Hooksmith::Processor::Base
     def can_handle?(_payload)
       true
     end
@@ -43,7 +43,7 @@ class DispatcherTest < Minitest::Test
   end
 
   # Un processor conditionnel qui ne traite que si payload[:handle] est true.
-  class ConditionalProcessor < Hooksmith::Processor::Base
+  class ::ConditionalProcessor < Hooksmith::Processor::Base
     def can_handle?(payload)
       payload[:handle] == true
     end
@@ -54,7 +54,7 @@ class DispatcherTest < Minitest::Test
   end
 
   # Un processor qui lève une erreur lors du traitement.
-  class ErrorProcessor < Hooksmith::Processor::Base
+  class ::ErrorProcessor < Hooksmith::Processor::Base
     def can_handle?(_payload)
       true
     end
@@ -65,7 +65,7 @@ class DispatcherTest < Minitest::Test
   end
 
   def test_no_processor_matches
-    Hooksmith.configuration.register_processor(@provider, :non_matching, ConditionalProcessor)
+    Hooksmith.configuration.register_processor(@provider, :non_matching, 'ConditionalProcessor')
     dispatcher = Hooksmith::Dispatcher.new(
       provider: @provider,
       event: :non_matching,
@@ -77,7 +77,7 @@ class DispatcherTest < Minitest::Test
   end
 
   def test_single_processor_matches
-    Hooksmith.configuration.register_processor(@provider, :single_event, SingleProcessor)
+    Hooksmith.configuration.register_processor(@provider, :single_event, 'SingleProcessor')
     dispatcher = Hooksmith::Dispatcher.new(
       provider: @provider,
       event: :single_event,
@@ -88,8 +88,8 @@ class DispatcherTest < Minitest::Test
   end
 
   def test_multiple_processors_raise_error
-    Hooksmith.configuration.register_processor(@provider, :multi_event, MultiProcessor1)
-    Hooksmith.configuration.register_processor(@provider, :multi_event, MultiProcessor2)
+    Hooksmith.configuration.register_processor(@provider, :multi_event, 'MultiProcessor1')
+    Hooksmith.configuration.register_processor(@provider, :multi_event, 'MultiProcessor2')
     dispatcher = Hooksmith::Dispatcher.new(
       provider: @provider,
       event: :multi_event,
@@ -100,7 +100,7 @@ class DispatcherTest < Minitest::Test
   end
 
   def test_processor_error_propagates
-    Hooksmith.configuration.register_processor(@provider, :error_event, ErrorProcessor)
+    Hooksmith.configuration.register_processor(@provider, :error_event, 'ErrorProcessor')
     dispatcher = Hooksmith::Dispatcher.new(
       provider: @provider,
       event: :error_event,

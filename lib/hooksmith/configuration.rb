@@ -27,9 +27,9 @@ module Hooksmith
     #
     # @param provider [Symbol, String] the provider name
     # @param event [Symbol, String] the event name
-    # @param processor_class [Class] the processor class
-    def register_processor(provider, event, processor_class)
-      registry[provider.to_sym] << { event: event.to_sym, processor: processor_class }
+    # @param processor_class_name [String] the processor class name
+    def register_processor(provider, event, processor_class_name)
+      registry[provider.to_sym] << { event: event.to_sym, processor: processor_class_name }
     end
 
     # Returns all processor entries for a given provider and event.
@@ -57,9 +57,9 @@ module Hooksmith
     # Registers a processor for a specific event.
     #
     # @param event [Symbol, String] the event name.
-    # @param processor_class [Class] the processor class.
-    def register(event, processor_class)
-      entries << { event: event.to_sym, processor: processor_class }
+    # @param processor_class_name [String] the processor class name.
+    def register(event, processor_class_name)
+      entries << { event: event.to_sym, processor: processor_class_name }
     end
   end
 end

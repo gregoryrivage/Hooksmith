@@ -33,7 +33,7 @@ module Hooksmith
 
       # Instantiate each processor and filter by condition.
       matching_processors = entries.map do |entry|
-        processor = entry[:processor].new(@payload)
+        processor = Object.const_get(entry[:processor]).new(@payload)
         processor if processor.can_handle?(@payload)
       end.compact
 

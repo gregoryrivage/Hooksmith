@@ -27,7 +27,7 @@ class RackIntegrationTest < Minitest::Test
   end
 
   # Processor qui renvoie une valeur lors du traitement.
-  class TestProcessor < Hooksmith::Processor::Base
+  class ::TestProcessor < Hooksmith::Processor::Base
     def can_handle?(_payload)
       true
     end
@@ -38,7 +38,7 @@ class RackIntegrationTest < Minitest::Test
   end
 
   # Processor simulant une erreur.
-  class ErrorProcessor < Hooksmith::Processor::Base
+  class ::ErrorProcessor < Hooksmith::Processor::Base
     def can_handle?(_payload)
       true
     end
@@ -53,7 +53,7 @@ class RackIntegrationTest < Minitest::Test
   end
 
   def test_rack_endpoint_success
-    Hooksmith.configuration.register_processor(:test, :event, TestProcessor)
+    Hooksmith.configuration.register_processor(:test, :event, 'TestProcessor')
     payload = { provider: 'test', event: 'event', key: 'value' }
     post '/', payload.to_json, { 'CONTENT_TYPE' => 'application/json' }
     assert_equal 200, last_response.status
@@ -62,7 +62,7 @@ class RackIntegrationTest < Minitest::Test
   end
 
   def test_rack_endpoint_error
-    Hooksmith.configuration.register_processor(:test, :event, ErrorProcessor)
+    Hooksmith.configuration.register_processor(:test, :event, 'ErrorProcessor')
     payload = { provider: 'test', event: 'event', key: 'value' }
     post '/', payload.to_json, { 'CONTENT_TYPE' => 'application/json' }
     assert_equal 500, last_response.status

@@ -28,26 +28,27 @@ class ConfigurationTest < Minitest::Test
   def test_configure_dsl_registers_provider
     Hooksmith.configure do |config|
       config.provider(:test_provider) do |provider_config|
-        provider_config.register(:test_event, DummyProcessor)
+        provider_config.register(:test_event, 'DummyProcessor')
       end
     end
     entries = Hooksmith.configuration.registry[:test_provider]
     assert_equal 1, entries.size
     assert_equal :test_event, entries.first[:event]
-    assert_equal DummyProcessor, entries.first[:processor]
+    assert_equal DummyProcessor, Object.const_get(entries.first[:processor])
   end
 
   def test_direct_registration_and_processors_for
-    Hooksmith.configuration.register_processor(:foo, :bar, DummyProcessor)
+    Hooksmith.configuration.register_processor(:foo, :bar, 'DummyProcessor')
     matches = Hooksmith.configuration.processors_for(:foo, :bar)
     assert_equal 1, matches.size
-    assert_equal DummyProcessor, matches.first[:processor]
+    assert_equal DummyProcessor, Object.const_get(matches.first[:processor])
   end
 
   def test_provider_config_registration
     provider_config = Hooksmith::ProviderConfig.new(:example)
-    provider_config.register(:sample_event, DummyProcessor)
+    provider_config.register(:sample_event, 'DummyProcessor')
     assert_equal 1, provider_config.entries.size
     assert_equal :sample_event, provider_config.entries.first[:event]
+    assert_equal DummyProcessor, Object.const_get(provider_config.entries.first[:processor])
   end
 end
