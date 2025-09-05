@@ -7,18 +7,21 @@ module Hooksmith
   class Configuration
     # @return [Hash] a registry mapping provider symbols to arrays of processor entries.
     attr_reader :registry
+    # @return [Hooksmith::Config::EventStore] configuration for event persistence
+    attr_reader :event_store_config
 
     def initialize
       # Registry structure: { provider_symbol => [{ event: event_symbol, processor: ProcessorClass }, ...] }
       @registry = Hash.new { |hash, key| hash[key] = [] }
+      @event_store_config = Hooksmith::Config::EventStore.new
     end
 
     # Groups registrations under a specific provider.
     #
     # @param provider_name [Symbol, String] the provider name (e.g., :stripe)
-    # @yield [ProviderConfig] a block yielding a ProviderConfig object
+    # @yield [Hooksmith::Config::Provider] a block yielding a Provider object
     def provider(provider_name)
-      provider_config = ProviderConfig.new(provider_name)
+      provider_config = Hooksmith::Config::Provider.new(provider_name)
       yield(provider_config)
       registry[provider_name.to_sym].concat(provider_config.entries)
     end
@@ -40,26 +43,23 @@ module Hooksmith
     def processors_for(provider, event)
       registry[provider.to_sym].select { |entry| entry[:event] == event.to_sym }
     end
-  end
 
-  # ProviderConfig is used internally by the DSL to collect processor registrations.
-  class ProviderConfig
-    # @return [Symbol, String] the provider name.
-    attr_reader :provider
-    # @return [Array<Hash>] list of entries registered.
-    attr_reader :entries
-
-    def initialize(provider)
-      @provider = provider
-      @entries = []
-    end
-
-    # Registers a processor for a specific event.
+    # Configure event store persistence.
     #
-    # @param event [Symbol, String] the event name.
-    # @param processor_class_name [String] the processor class name.
-    def register(event, processor_class_name)
-      entries << { event: event.to_sym, processor: processor_class_name }
+    # @yield [Hooksmith::Config::EventStore] a block yielding an EventStore object
+    # @example
+    #   Hooksmith.configure do |config|
+    #     config.event_store do |store|
+    #       store.enabled = true
+    #       store.model_class_name = 'MyApp::WebhookEvent'
+    #       store.record_timing = :before # or :after, or :both
+    #       store.mapper = ->(provider:, event:, payload:) {
+    #         { provider:, event: event.to_s, payload:, received_at: (Time.respond_to?(:current) ? Time.current : Time.now) }
+    #       }
+    #     end
+    #   end
+    def event_store
+      yield(@event_store_config)
     end
   end
 end

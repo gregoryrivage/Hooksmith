@@ -28,6 +28,9 @@ module Hooksmith
     #
     # @raise [MultipleProcessorsError] if multiple processors qualify.
     def run!
+      # Optionally record the incoming event before processing.
+      Hooksmith::EventRecorder.record!(provider: @provider, event: @event, payload: @payload, timing: :before)
+
       # Fetch all processors registered for this provider and event.
       entries = Hooksmith.configuration.processors_for(@provider, @event)
 
@@ -46,7 +49,12 @@ module Hooksmith
       raise MultipleProcessorsError.new(@provider, @event, @payload) if matching_processors.size > 1
 
       # Exactly one matching processor.
-      matching_processors.first.process!
+      result = matching_processors.first.process!
+
+      # Optionally record the event after successful processing.
+      Hooksmith::EventRecorder.record!(provider: @provider, event: @event, payload: @payload, timing: :after)
+
+      result
     rescue StandardError => e
       Hooksmith.logger.error("Error processing #{@provider} event #{@event}: #{e.message}")
       raise e

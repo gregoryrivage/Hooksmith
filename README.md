@@ -48,6 +48,52 @@ Hooksmith.configure do |config|
 end
 ```
 
+### Persisting Webhook Events (Optional)
+
+Hooksmith can optionally persist incoming webhook events to your database. Configure it with your own ActiveRecord model and mapping logic.
+
+1) Create a model in your app (example):
+
+```ruby
+class WebhookEvent < ApplicationRecord
+  self.table_name = 'webhook_events'
+end
+```
+
+2) Example migration (customize fields as needed):
+
+```ruby
+create_table :webhook_events do |t|
+  t.string   :provider
+  t.string   :event
+  t.jsonb    :payload
+  t.datetime :received_at
+  t.timestamps
+  t.index    :event
+  t.index    :received_at
+end
+```
+
+3) Configure Hooksmith to record events:
+
+```ruby
+Hooksmith.configure do |config|
+  config.event_store do |store|
+    store.enabled = true
+    store.model_class_name = 'WebhookEvent' # your model class
+    store.record_timing = :before # :before, :after, or :both
+    store.mapper = ->(provider:, event:, payload:) {
+      {
+        provider: provider.to_s,
+        event: event.to_s,
+        payload:,
+        received_at: (Time.respond_to?(:current) ? Time.current : Time.now)
+      }
+    }
+  end
+end
+```
+
 ## Implementing a Processor
 Create a processor by inheriting from `Hooksmith::Processor::Base`:
 

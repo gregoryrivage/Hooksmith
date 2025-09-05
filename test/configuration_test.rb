@@ -45,7 +45,7 @@ class ConfigurationTest < Minitest::Test
   end
 
   def test_provider_config_registration
-    provider_config = Hooksmith::ProviderConfig.new(:example)
+    provider_config = Hooksmith::Config::Provider.new(:example)
     provider_config.register(:sample_event, 'DummyProcessor')
     assert_equal 1, provider_config.entries.size
     assert_equal :sample_event, provider_config.entries.first[:event]
